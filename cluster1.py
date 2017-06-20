@@ -12,7 +12,7 @@ class FriendshipManager():
     def loader():
         print 'Loading data ...'
         friendships = list()
-        for i in range(1, 28):
+        for i in range(1, 2):
             friendships.extend(file_tool.load_json('./temp/friends_%sk_%sk.json' % (i, i+1)))
 
         def convert_list_to_dict(list_friendships):
@@ -37,14 +37,12 @@ class FriendshipManager():
                 if count < 3:
                     print "length of new value: %s)" % len(friendships[id])
                 count += 1
-            print 'DONE SORTING'
             return friendships
 
         def remove_single_node(friendships_d):
             for key, value in friendships_d.items():
                 if not value:
                     friendships_d.pop(key)
-            print 'DONE REMOVE SINGLE NODE'
             return friendships_d
 
 
