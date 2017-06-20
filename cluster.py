@@ -9,8 +9,10 @@ class FriendshipManager():
 
     @staticmethod
     def loader():
+        print 'Loading data ...'
         friendships = list()
-        friendships.extend(file_tool.load_json('./temp/friends_1k_2k.json'))
+        for i in range(1, 28):
+            friendships.extend(file_tool.load_json('./temp/friends_%sk_%sk.json' % (i, i+1)))
 
         def convert_list_to_dict(list_friendships):
             friendships = dict()
@@ -38,6 +40,12 @@ class FriendshipManager():
     @staticmethod
     def get_list_ids():
         return FriendshipManager.friendship_dict.keys()
+
+    @staticmethod
+    def get_potential_ids():
+        ids = set(FriendshipManager.get_list_ids())
+        friends_ids = set(reduce(lambda x, y: x+y, FriendshipManager.friendship_dict.values()))
+        return list(ids.intersection(friends_ids))
 
 
 class Group:
@@ -68,50 +76,55 @@ def generate_combination_of_two(list_groups):
                 result.append(new_group)
     return result
 
+
 if __name__ == '__main__':
 
-    FriendshipManager.loader()
-
-    list_ids = FriendshipManager.get_list_ids()
-
-    # print FriendshipManager.is_friend('1142121730', '100002947505739')
+    # FriendshipManager.loader()
+    #
+    # # list_ids = FriendshipManager.get_list_ids()
+    # list_ids = FriendshipManager.get_potential_ids()
+    # print 'Length list id: %s' % len(list_ids)
+    # # print FriendshipManager.is_friend('1142121730', '100002947505739')
+    # # print 'Done'
+    # #
+    # # initial_groups = list()
+    # # for id in list_ids:
+    # #     initial_groups.append(Group([id]))
+    # #
+    # # print 'Step 1'
+    # # candidates_next = generate_combination_of_two(initial_groups)
+    # # step_index = 2
+    # # while len(candidates_next) != 0:
+    # #     candidates_pass = candidates_next
+    # #     print 'Step %s' % step_index
+    # #     step_index += 1
+    # #     candidates_next = generate_combination_of_two(candidates_next)
+    # def is_friend_with_group(id, ids):
+    #     for i in range(len(ids)):
+    #         if FriendshipManager.is_friend(id, ids[i]):
+    #             return True
+    #     return False
+    #
+    # groups = []
+    # group_current = []
+    # while len(list_ids) > 0:
+    #     new_id = list_ids.pop()
+    #     group_current.append(new_id)
+    #     has_changed = True
+    #     while has_changed:
+    #         has_changed = False
+    #         for i in range(len(list_ids)-1, -1, -1):
+    #             if is_friend_with_group(list_ids[i], group_current):
+    #                 group_current.append(list_ids[i])
+    #                 del list_ids[i]
+    #                 has_changed = True
+    #         print 'Current group: %s' % len(group_current)
+    #         print 'has_change %s' % has_changed
+    #     groups.append(group_current)
+    #     group_current = []
+    #     print 'Number of groups: %s' % len(groups)
+    #     print 'Number of remaining id: %s' % len(list_ids)
     # print 'Done'
-    #
-    # initial_groups = list()
-    # for id in list_ids:
-    #     initial_groups.append(Group([id]))
-    #
-    # print 'Step 1'
-    # candidates_next = generate_combination_of_two(initial_groups)
-    # step_index = 2
-    # while len(candidates_next) != 0:
-    #     candidates_pass = candidates_next
-    #     print 'Step %s' % step_index
-    #     step_index += 1
-    #     candidates_next = generate_combination_of_two(candidates_next)
-    def is_friend_with_group(id, ids):
-        for i in range(len(ids)):
-            if FriendshipManager.is_friend(id, ids[i]):
-                return True
-        return False
 
-    groups = []
-    group_current = []
-    while len(list_ids) > 0:
-        new_id = list_ids.pop()
-        group_current.append(new_id)
-        has_changed = True
-        while has_changed:
-            has_changed = False
-            for i in range(len(list_ids)-1, -1, -1):
-                if is_friend_with_group(list_ids[i], group_current):
-                    group_current.append(list_ids[i])
-                    del list_ids[i]
-                    has_changed = True
-            print 'Current group: %s' % len(group_current)
-            print 'has_change %s' % has_changed
-        groups.append(group_current)
-        group_current = []
-        print 'Number of groups: %s' % len(groups)
-        print 'Number of remaining id: %s' % len(list_ids)
-    print 'Done'
+    data = file_tool.load_json('./temp/friends_1k_2k.json')
+    # data is a list of dict
