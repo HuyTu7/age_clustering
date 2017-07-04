@@ -12,7 +12,7 @@ class FriendshipManager():
     def loader():
         print 'Loading data ...'
         friendships = list()
-        for i in range(1, 2):
+        for i in range(1, 6):
             friendships.extend(file_tool.load_json('./temp/friends_%sk_%sk.json' % (i, i+1)))
 
         def convert_list_to_dict(list_friendships):
@@ -32,24 +32,24 @@ class FriendshipManager():
                 if count < 3:
                     print "length of value: %s)" % len(friendships_d[id])
                 #friends = [friend for friend in value if friend in friendships_d.keys()]
-                friends = set(friendships_d[id]).intersection(ids)
+                friends = ids.intersection(friendships_d[id])
                 friendships[id] = list(friends)
                 if count < 3:
                     print "length of new value: %s)" % len(friendships[id])
                 count += 1
+            print 'DONE SORTING'
             return friendships
 
         def remove_single_node(friendships_d):
-            for key, value in friendships_d.items():
-                if not value:
-                    friendships_d.pop(key)
-            return friendships_d
+            friendships_dict = dict((k, v) for k, v in friendships_d.iteritems() if v)
+            print 'DONE REMOVE SINGLE NODE'
+            return friendships_dict
 
 
         friendships_d = convert_list_to_dict(friendships)
-        #print 'Test d: %s, %s' % (friendships_d.keys()[0], len(friendships_d[friendships_d.keys()[0]]))
+        print 'Test d: %s, %s' % (friendships_d.keys()[0], len(friendships_d[friendships_d.keys()[0]]))
         friendships_d1 = sorting(friendships_d)
-        #print 'Test d1: %s, %s' % (friendships_d1.keys()[0], len(friendships_d1[friendships_d1.keys()[0]]))
+        print 'Test d1: %s, %s' % (friendships_d1.keys()[0], len(friendships_d1[friendships_d1.keys()[0]]))
         friendships_d2 = remove_single_node(friendships_d1)
         FriendshipManager.friendship_dict1 = friendships_d1
         FriendshipManager.friendship_dict2 = friendships_d2
