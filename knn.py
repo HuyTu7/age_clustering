@@ -3,7 +3,9 @@ import json
 import numpy
 import csv
 import networkx as nx
-
+import operator
+import random
+from sklearn.metrics import classification_report
 
 def dict_to_LofT(graph):
     graph_t = []
@@ -24,27 +26,105 @@ def dict_to_list(dict):
             writer.writerow([key])
 
 
-def networkx_graph(graph):
+def dict_to_nx(graph):
     g = nx.Graph()
-    unvisited = set()
-    for vertex in graph.keys():
-        unvisited.add(vertex)
-    partitions = []
-    while unvisited:
-        start = next(iter(unvisited))
-        visited, stack = set(), [start]
-        while stack:
-            vertex = stack.pop()
-            if vertex not in visited:
-                visited.add(vertex)
-                unvisited.remove(vertex)
-                stack.extend(set(graph[vertex]) - visited)
-        print "Finish 1 group"
-        partitions.append(list(visited))
-    return partitions
+    keys = [i[0] for i in graph]
+    print len(keys)
+    for a, row in graph:
+        if not row:
+            g.add_node(a)
+        else:
+            for b in row:
+                #print "vertex: %s and vertex: %s" % (a, b)
+                g.add_edge(a, b)
+    return keys, g
 
+
+def list_to_csv(dict):
+    with open('test_ids.csv', 'wb') as f:
+        writer = csv.writer(f)
+        for key in dict:
+            writer.writerow([key])
+
+
+def getNeighbors(node, graph, k):
+    distances = []
+    for m in graph.nodes():
+        try:
+            dist = nx.dijkstra_path_length(graph, source=node, target=m)
+            distances.append((m, dist))
+        except nx.exception.NetworkXNoPath:
+            print "Error Not Reachable Path"
+    distances.sort(key=operator.itemgetter(1))
+    neighbors = []
+    for x in range(k):
+        try:
+            neighbors.append(distances[x])
+        except IndexError:
+            print("IndexError")
+    return neighbors
+
+
+def getResponse(neighbors, df):
+    classVotes = {}
+    for x in range(len(neighbors)):
+        response = df[neighbors[x][0]]
+        if response in classVotes:
+            classVotes[response] += 1
+        else:
+            classVotes[response] = 1
+    sortedVotes = sorted(classVotes.iteritems(), key=operator.itemgetter(1), reverse=True)
+    return sortedVotes[0][0]
+
+
+def getAccuracy(testSet, predictions, df):
+    correct = 0
+    for x in testSet:
+        entry = df[x]
+        if entry['age_class'] == predictions[x]:
+            correct += 1
+    return (correct / float(len(testSet))) * 100.0
+
+def save_list(data, name):
+    with open(name, 'wb') as f:
+        writer = csv.writer(f)
+        for p in predictions:
+            writer.writerow([p])
 
 if __name__ == '__main__':
+    random.seed(9001)
+    split = 0.25
+    pd_df = pd.read_csv('./data_18k_age_class.csv', encoding="UTF-8", dtype={'id': str})
+    df = dict([(row['id'], row['age_class']) for index, row in pd_df.iterrows()])
+    print df['100000714719164']
     with open('temp.json') as data_file1:
-        graph_data = dict_to_LofT(json.load(data_file1))
-    dict_to_adjmatrix(graph_data)
+        graph_data = dict_to_LofT(json.load(data_file1, encoding="UTF-8"))
+    keys, g = dict_to_nx(graph_data)
+    print keys
+    random.shuffle(keys)
+    size = int(len(keys) * split)
+    testSet = keys[:size]
+    print len(testSet)
+    print("Nodes of graph: ")
+    print(g.nodes())
+    print(len(g.nodes()))
+    print("Edges of graph: ")
+    print(g.edges())
+
+    predictions = []
+    actuals = []
+    k = 3
+
+    for n in testSet:
+        neighbors = getNeighbors(n, g, k)
+        result = getResponse(neighbors, df)
+        predictions.append(result)
+        actuals.append(df[n])
+        print('> predicted=' + repr(result) + ', actual=' + repr(df[n]))
+
+    save_list(predictions, 'test_predicted.csv')
+    '''
+    with open('test_predicted.csv') as f:
+        predictions = [line.split() for line in f]
+    '''
+    print("Scores on test set: %s" % classification_report(actuals, predictions))
