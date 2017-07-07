@@ -18,18 +18,11 @@ def dict_to_LofT(graph):
     return graph_t
 
 
-def dict_to_list(dict):
-    keys = dict.values()
-    with open('returns.csv', 'wb') as f:
-        writer = csv.writer(f)
-        for key in keys:
-            writer.writerow([key])
-
-
 def dict_to_nx(graph):
     g = nx.Graph()
     keys = [i[0] for i in graph]
     print len(keys)
+    list_to_csv(keys)
     for a, row in graph:
         if not row:
             g.add_node(a)
@@ -54,14 +47,14 @@ def getNeighbors(node, graph, k):
             dist = nx.dijkstra_path_length(graph, source=node, target=m)
             distances.append((m, dist))
         except nx.exception.NetworkXNoPath:
-            print "Error Not Reachable Path"
+            pass
     distances.sort(key=operator.itemgetter(1))
     neighbors = []
     for x in range(k):
         try:
             neighbors.append(distances[x])
         except IndexError:
-            print("IndexError")
+            pass
     return neighbors
 
 
@@ -77,39 +70,31 @@ def getResponse(neighbors, df):
     return sortedVotes[0][0]
 
 
-def getAccuracy(testSet, predictions, df):
-    correct = 0
-    for x in testSet:
-        entry = df[x]
-        if entry['age_class'] == predictions[x]:
-            correct += 1
-    return (correct / float(len(testSet))) * 100.0
-
 def save_list(data, name):
     with open(name, 'wb') as f:
         writer = csv.writer(f)
-        for p in predictions:
-            writer.writerow([p])
+        for d in data:
+            writer.writerow([d])
+
 
 if __name__ == '__main__':
     random.seed(9001)
-    split = 0.25
+    split = 0.3
     pd_df = pd.read_csv('./data_18k_age_class.csv', encoding="UTF-8", dtype={'id': str})
     df = dict([(row['id'], row['age_class']) for index, row in pd_df.iterrows()])
-    print df['100000714719164']
-    with open('temp.json') as data_file1:
+    with open('result2.json') as data_file1:
         graph_data = dict_to_LofT(json.load(data_file1, encoding="UTF-8"))
     keys, g = dict_to_nx(graph_data)
     print keys
     random.shuffle(keys)
     size = int(len(keys) * split)
     testSet = keys[:size]
+    save_list(testSet, 'test.csv')
     print len(testSet)
-    print("Nodes of graph: ")
-    print(g.nodes())
+    print("Number of nodes in the graph: ")
     print(len(g.nodes()))
     print("Edges of graph: ")
-    print(g.edges())
+    print(len(g.edges()))
 
     predictions = []
     actuals = []
@@ -122,7 +107,8 @@ if __name__ == '__main__':
         actuals.append(df[n])
         print('> predicted=' + repr(result) + ', actual=' + repr(df[n]))
 
-    save_list(predictions, 'test_predicted.csv')
+    save_list(predictions, '18k_test_predicted.csv')
+    save_list(actuals, '18k_test_actuals.csv')
     '''
     with open('test_predicted.csv') as f:
         predictions = [line.split() for line in f]
