@@ -5,6 +5,7 @@ import csv
 import networkx as nx
 import operator
 import random
+from heapq import nsmallest
 from sklearn.metrics import classification_report
 
 def dict_to_LofT(graph):
@@ -51,20 +52,24 @@ def getNeighbors(node, graph, k):
             distances.append((m, dist))
         except nx.exception.NetworkXNoPath:
             pass
-    distances.sort(key=operator.itemgetter(1))
+    small_d = nsmallest(10, distance, key=operator.itemgetter(1))
+    # distances.sort(key=operator.itemgetter(1))
     neighbors = []
     for x in range(k):
         try:
-            neighbors.append(distances[x])
+            neighbors.append(small_d[x])
         except IndexError:
             pass
     return neighbors
 
 
 def keygraph_gen(n, m):
-    temp = [int(n), int(m)]
-    temp.sort()
-    key = str(temp[0]) + ":" + str(temp[1])
+    if int(n) != int(m):
+        temp = [int(n), int(m)]
+        temp.sort()
+        key = str(temp[0]) + ":" + str(temp[1])
+    else 
+        key = ""
     return key
 
 
@@ -75,7 +80,7 @@ def loadShortestPath(graph):
         for m in graph.nodes():
             try:
                 key = keygraph_gen(n, m)
-                if key not in graph_dist:
+                if key and key not in graph_dist:
                     dist = nx.dijkstra_path_length(graph, source=n, target=m)
                     graph_dist[key] = dist 
             except nx.exception.NetworkXNoPath:
@@ -111,7 +116,7 @@ if __name__ == '__main__':
     split = 0.3
     pd_df = pd.read_csv('./data_18k_age_class.csv', encoding="UTF-8", dtype={'id': str})
     df = dict([(row['id'], row['age_class']) for index, row in pd_df.iterrows()])
-    with open('./result5.json') as data_file1:
+    with open('./temp.json') as data_file1:
         graph_data = dict_to_LofT(json.load(data_file1, encoding="UTF-8"))
     keys, g = dict_to_nx(graph_data)
     print keys
@@ -127,8 +132,10 @@ if __name__ == '__main__':
 
     predictions = []
     actuals = []
-    k = 3
+    k = 4
+    print "start loading shorted distance between nodes"
     loadShortestPath(g)
+    print "done loading shorted distance between nodes"
     for n in testSet:
         neighbors = getNeighbors(n, g, k)
         result = getResponse(neighbors, df)
@@ -136,8 +143,8 @@ if __name__ == '__main__':
         actuals.append(df[n])
         print('> predicted=' + repr(result) + ', actual=' + repr(df[n]))
 
-    save_list(predictions, '18k_test_predicted.csv')
-    save_list(actuals, '18k_test_actuals.csv')
+    save_list(predictions, 'temp_test_predicted.csv')
+    save_list(actuals, 'temp_test_actuals.csv')
     '''
     with open('test_predicted.csv') as f:
         predictions = [line.split() for line in f]
