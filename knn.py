@@ -46,13 +46,11 @@ def getNeighbors(node, graph, k):
         data = json.load(fp)
     distances = []
     for m in graph.nodes():
-        try:
-            key = keygraph_gen(n, m)
+        key = keygraph_gen(n, m)
+        if key in data:
             dist = data[key]
             distances.append((m, dist))
-        except nx.exception.NetworkXNoPath:
-            pass
-    small_d = nsmallest(10, distance, key=operator.itemgetter(1))
+    small_d = nsmallest(10, distances, key=operator.itemgetter(1))
     # distances.sort(key=operator.itemgetter(1))
     neighbors = []
     for x in range(k):
@@ -94,6 +92,7 @@ def loadShortestPath(graph):
 
 def getResponse(neighbors, df):
     classVotes = {}
+    classes = [u'B', u'C', u'D', u'E']
     for x in range(len(neighbors)):
         response = df[neighbors[x][0]]
         if response in classVotes:
@@ -101,7 +100,12 @@ def getResponse(neighbors, df):
         else:
             classVotes[response] = 1
     sortedVotes = sorted(classVotes.iteritems(), key=operator.itemgetter(1), reverse=True)
-    return sortedVotes[0][0]
+    choice = ""
+    if sortedVotes:
+        choice = sortedVotes[0][0]
+    else:
+        choice = random.choice(classes)
+    return choice
 
 
 def save_list(data, name):
@@ -134,7 +138,7 @@ if __name__ == '__main__':
     actuals = []
     k = 4
     print "start loading shorted distance between nodes"
-    loadShortestPath(g)
+    #loadShortestPath(g)
     print "done loading shorted distance between nodes"
     for n in testSet:
         neighbors = getNeighbors(n, g, k)
