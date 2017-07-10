@@ -68,7 +68,7 @@ def keygraph_gen(n, m):
         temp = [int(n), int(m)]
         temp.sort()
         key = str(temp[0]) + ":" + str(temp[1])
-    else 
+    else: 
         key = ""
     return key
 
@@ -116,14 +116,14 @@ if __name__ == '__main__':
     split = 0.3
     pd_df = pd.read_csv('./data_18k_age_class.csv', encoding="UTF-8", dtype={'id': str})
     df = dict([(row['id'], row['age_class']) for index, row in pd_df.iterrows()])
-    with open('./temp.json') as data_file1:
+    with open('./result5.json') as data_file1:
         graph_data = dict_to_LofT(json.load(data_file1, encoding="UTF-8"))
     keys, g = dict_to_nx(graph_data)
     print keys
     random.shuffle(keys)
     size = int(len(keys) * split)
     testSet = keys[:size]
-    save_list(testSet, 'test.csv')
+    save_list(testSet, '18k_test.csv')
     print len(testSet)
     print("Number of nodes in the graph: ")
     print(len(g.nodes()))
@@ -143,8 +143,8 @@ if __name__ == '__main__':
         actuals.append(df[n])
         print('> predicted=' + repr(result) + ', actual=' + repr(df[n]))
 
-    save_list(predictions, 'temp_test_predicted.csv')
-    save_list(actuals, 'temp_test_actuals.csv')
+    save_list(predictions, '18k_test_predicted.csv')
+    save_list(actuals, '18k_test_actuals.csv')
     '''
     with open('test_predicted.csv') as f:
         predictions = [line.split() for line in f]
