@@ -41,10 +41,13 @@ def list_to_csv(dict):
 
 
 def getNeighbors(node, graph, k):
+    with open('temp_data.json', 'r') as fp:
+        data = json.load(fp)
     distances = []
     for m in graph.nodes():
         try:
-            dist = nx.dijkstra_path_length(graph, source=node, target=m)
+            key = keygraph_gen(n, m)
+            dist = data[key]
             distances.append((m, dist))
         except nx.exception.NetworkXNoPath:
             pass
@@ -57,6 +60,32 @@ def getNeighbors(node, graph, k):
             pass
     return neighbors
 
+
+def keygraph_gen(n, m):
+    temp = [int(n), int(m)]
+    temp.sort()
+    key = str(temp[0]) + ":" + str(temp[1])
+    return key
+
+
+def loadShortestPath(graph):
+    graph_dist = {}
+    count = 0 
+    for n in graph.nodes():
+        for m in graph.nodes():
+            try:
+                key = keygraph_gen(n, m)
+                if key not in graph_dist:
+                    dist = nx.dijkstra_path_length(graph, source=n, target=m)
+                    graph_dist[key] = dist 
+            except nx.exception.NetworkXNoPath:
+                pass
+        count += 1
+        if count % 100 == 0:
+            print count
+    with open('temp_data.json', 'w') as fp:
+        json.dump(graph_dist, fp)
+    
 
 def getResponse(neighbors, df):
     classVotes = {}
@@ -82,7 +111,7 @@ if __name__ == '__main__':
     split = 0.3
     pd_df = pd.read_csv('./data_18k_age_class.csv', encoding="UTF-8", dtype={'id': str})
     df = dict([(row['id'], row['age_class']) for index, row in pd_df.iterrows()])
-    with open('result2.json') as data_file1:
+    with open('./result5.json') as data_file1:
         graph_data = dict_to_LofT(json.load(data_file1, encoding="UTF-8"))
     keys, g = dict_to_nx(graph_data)
     print keys
@@ -99,7 +128,7 @@ if __name__ == '__main__':
     predictions = []
     actuals = []
     k = 3
-
+    loadShortestPath(g)
     for n in testSet:
         neighbors = getNeighbors(n, g, k)
         result = getResponse(neighbors, df)
