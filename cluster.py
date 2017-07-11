@@ -28,18 +28,11 @@ class FriendshipManager():
 
 
         def filling(friendships_d):
-            count = 0
             for key, value in friendships_d.items():
                 if value:
                     for id in value:
                         if id in set(friendships_d.keys()):
-                            count += 1
-                            if count < 4:
-                                print key
-                                print friendships_d[id]
                             friendships_d[id].add(key)
-                            if count < 4:
-                                print friendships_d[id]
             print 'DONE FILLING'
             print count
             return friendships_d
@@ -59,7 +52,7 @@ class FriendshipManager():
 
         def set_to_list(friendships_d):
             friendships_dict = dict((k, list(v)) for k, v in friendships_d.iteritems() if v)
-            return friendships_dict]
+            return friendships_dict
 
 
         friendships_d = convert_list_to_dict(friendships)
@@ -71,7 +64,7 @@ class FriendshipManager():
         FriendshipManager.friendship_dict2 = friendships_d2
         print 'Total id with the single nodes: %s' % len(FriendshipManager.friendship_dict1.keys())
         print 'Total id after fillings and without the single nodes: %s' % len(FriendshipManager.friendship_dict2.keys())
-        f = open('result2.json', 'w')
+        f = open('result3.json', 'w')
         try:
             json.dump(FriendshipManager.friendship_dict2, f)
         finally:
@@ -109,9 +102,44 @@ def dfs(graph):
     return partitions
 
 
+def sorting1(friendships_d):
+    friendships = dict.fromkeys(['ids', 'friends'])
+    count = 0
+    ids = set(friendships_d.keys())
+    for id in ids:
+        friends = ids.intersection(friendships_d[id])
+        friendships[id] = friends
+        count += 1
+    print 'DONE SORTING'
+    return friendships
+
+
+def set_to_list(friendships_d):
+    friendships_dict = dict((k, list(v)) for k, v in friendships_d.iteritems() if v)
+    return friendships_dict
+
 
 if __name__ == '__main__':
-    with open('result.json') as data_file:
-        graph_data = json.load(data_file)
-    partitions = dfs(graph_data)
-    save_graph(partitions, 'cluster_test.json')
+    with open('result5.json') as data_file1:
+        temp = json.load(data_file1, encoding="UTF-8")
+    with open('groups_by_school_18k_age.json') as data_file1:
+        schools = json.load(data_file1, encoding="UTF-8")
+    school_ids = ["ChIJQ3T2OsTddDER7_7n4hBGtHk", "ChIJV4ClqKnedDERYvcv37XIn7o", "ChIJgVGjH1nZdDERaR1JcSCT_Go"]
+    ids = []
+    for s in school_ids:
+        ids = ids + schools[s]
+    dataset = dict()
+    for id in ids:
+        if str(id) in temp:
+            dataset[str(id)] = temp[str(id)]
+    dataset = sorting1(dataset)
+    final_dataset = set_to_list(dataset)
+    f = open('temp1.json', 'w')
+    try:
+        json.dump(final_dataset, f)
+    finally:
+        f.close()
+        #with open('result.json') as data_file:
+    #    graph_data = json.load(data_file)
+    #partitions = dfs(graph_data)
+    #save_graph(partitions, 'cluster_test.json')
