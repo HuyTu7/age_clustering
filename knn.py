@@ -5,6 +5,7 @@ import csv
 import networkx as nx
 import operator
 import random
+from heapq import nsmallest
 from sklearn.metrics import classification_report
 
 def dict_to_LofT(graph):
@@ -45,26 +46,28 @@ def getNeighbors(node, graph, k):
         data = json.load(fp)
     distances = []
     for m in graph.nodes():
-        try:
-            key = keygraph_gen(n, m)
+        key = keygraph_gen(n, m)
+        if key in data:
             dist = data[key]
             distances.append((m, dist))
-        except nx.exception.NetworkXNoPath:
-            pass
-    distances.sort(key=operator.itemgetter(1))
+    small_d = nsmallest(10, distances, key=operator.itemgetter(1))
+    # distances.sort(key=operator.itemgetter(1))
     neighbors = []
     for x in range(k):
         try:
-            neighbors.append(distances[x])
+            neighbors.append(small_d[x])
         except IndexError:
             pass
     return neighbors
 
 
 def keygraph_gen(n, m):
-    temp = [int(n), int(m)]
-    temp.sort()
-    key = str(temp[0]) + ":" + str(temp[1])
+    if int(n) != int(m):
+        temp = [int(n), int(m)]
+        temp.sort()
+        key = str(temp[0]) + ":" + str(temp[1])
+    else: 
+        key = ""
     return key
 
 
@@ -75,7 +78,7 @@ def loadShortestPath(graph):
         for m in graph.nodes():
             try:
                 key = keygraph_gen(n, m)
-                if key not in graph_dist:
+                if key and key not in graph_dist:
                     dist = nx.dijkstra_path_length(graph, source=n, target=m)
                     graph_dist[key] = dist 
             except nx.exception.NetworkXNoPath:
@@ -89,6 +92,7 @@ def loadShortestPath(graph):
 
 def getResponse(neighbors, df):
     classVotes = {}
+    classes = [u'B', u'C', u'D', u'E']
     for x in range(len(neighbors)):
         response = df[neighbors[x][0]]
         if response in classVotes:
@@ -96,7 +100,12 @@ def getResponse(neighbors, df):
         else:
             classVotes[response] = 1
     sortedVotes = sorted(classVotes.iteritems(), key=operator.itemgetter(1), reverse=True)
-    return sortedVotes[0][0]
+    choice = ""
+    if sortedVotes:
+        choice = sortedVotes[0][0]
+    else:
+        choice = random.choice(classes)
+    return choice
 
 
 def save_list(data, name):
@@ -118,7 +127,7 @@ if __name__ == '__main__':
     random.shuffle(keys)
     size = int(len(keys) * split)
     testSet = keys[:size]
-    save_list(testSet, 'test.csv')
+    save_list(testSet, '18k_test.csv')
     print len(testSet)
     print("Number of nodes in the graph: ")
     print(len(g.nodes()))
@@ -127,8 +136,10 @@ if __name__ == '__main__':
 
     predictions = []
     actuals = []
-    k = 3
-    loadShortestPath(g)
+    k = 4
+    print "start loading shorted distance between nodes"
+    #loadShortestPath(g)
+    print "done loading shorted distance between nodes"
     for n in testSet:
         neighbors = getNeighbors(n, g, k)
         result = getResponse(neighbors, df)
