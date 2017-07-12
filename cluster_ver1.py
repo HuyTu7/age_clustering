@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 import pickle
+import csv
 from json import dumps, loads, JSONEncoder, JSONDecoder
 from younet_rnd_infrastructure.tri.common import file_tool
 
@@ -119,6 +120,13 @@ def set_to_list(friendships_d):
     return friendships_dict
 
 
+def save_list(data, name):
+    with open(name, 'wb') as f:
+        writer = csv.writer(f)
+        for d in data:
+            writer.writerow(d)
+
+
 if __name__ == '__main__':
     with open('result5.json') as f1:
         temp = json.load(f1, encoding="UTF-8")
@@ -128,23 +136,34 @@ if __name__ == '__main__':
     for k, v in schools.items():
         if len(v) > 10:
             school_ids.append(k)
-
-    #school_ids = ["ChIJVX7muh4vdTER2J7aPJLq9Aw", "ChIJ9zY0nHOrNTERRkzQJ4RL2Jc", "ChIJvzMAlCvcdDERQfH1JpoaGIs", "ChIJQ3T2OsTddDER7_7n4hBGtHk", "ChIJV4ClqKnedDERYvcv37XIn7o", "ChIJgVGjH1nZdDERaR1JcSCT_Go", "ChIJmapMxzYvdTERpSDvLmpEPHQ"]
     ids = []
+    index = 0
+    id_schools = dict()
     for s in school_ids:
-        ids = ids + schools[s]
+        ids += schools[s]
+        for p in schools[s]:
+            id_schools[p] = index
+        index += 1
     dataset = dict()
     for id in ids:
         if str(id) in temp:
             dataset[str(id)] = temp[str(id)]
     dataset = sorting1(dataset)
     final_dataset = set_to_list(dataset)
-    f = open('temp5.json', 'w')
+    #save_list(ids, 'school_ids.csv')
+    friends_f = open('temp_final.json', 'w')
     try:
-        json.dump(final_dataset, f)
+        json.dump(final_dataset, friends_f)
     finally:
-        f.close()
+        friends_f.close()
     
+    schools_f = open('school_ids.json', 'w')
+    try:
+        json.dump(id_schools, schools_f)
+    finally:
+        schools_f.close()
+
+
         #with open('result.json') as data_file:
     #    graph_data = json.load(data_file)
     #partitions = dfs(graph_data)
