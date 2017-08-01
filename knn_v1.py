@@ -1,6 +1,5 @@
 import pandas as pd
 import json
-import numpy
 import csv
 import networkx as nx
 import operator
@@ -134,22 +133,19 @@ if __name__ == '__main__':
     split = 0.4
     pd_df = pd.read_csv('./data_18k_age_class.csv', encoding="UTF-8", dtype={'id': str})
     df = dict([(row['id'], row['age_class']) for index, row in pd_df.iterrows()])
-    with open('school_ids_test.json') as file1:
+    with open('school_ids.json') as file1:
         s_ids = json.load(file1, encoding="UTF-8")
-    with open('temp_final_test.json') as file2:
+    with open('ids_and_friends.json') as file2:
         graph_data = dict_to_LofT(json.load(file2, encoding="UTF-8"))
     keys, g = dict_to_nx(graph_data)
-    #print keys
+
     random.shuffle(keys)
     size = int(len(keys) * split)
     testSet = keys[:size]
-    print len(testSet)
-    print("Nodes of graph: ")
-    print(len(g.nodes()))
-    print("Edges of graph: ")
-    print(len(g.edges()))
+    print("Nodes of graph: %s " % len(g.nodes()))
+    print("Edges of graph: %s " % len(g.edges()))
 
-    #print("Neighbors of node 100002597518977: %s") % g["100002597518977"].keys()
+    print("Neighbors of node 100002597518977: %s") % g["100002597518977"].keys()
     print("School ID of %s: %s") % ("100014187279433", s_ids["100014187279433"])
     predictions = []
     actuals = []
@@ -160,13 +156,10 @@ if __name__ == '__main__':
         result = getResponse(k_neighbors, df)
         predictions.append(result)
         actuals.append(df[n])
-        #print('> predicted=' + repr(result) + ', actual=' + repr(df[n]))
+        print('> predicted=' + repr(result) + ', actual=' + repr(df[n]))
 
-    save_list(predictions, '3s_test_predicted.csv')
-    save_list(actuals, '3s_test_actuals.csv')
-    
-    #with open('test_predicted.csv') as f:
-    #    predictions = [line.split() for line in f]
-    print len(actuals)
-    print len(predictions)
+    #save_list(predictions, '3s_test_predicted.csv')
+    #save_list(actuals, '3s_test_actuals.csv')
+    #print len(actuals)
+    #print len(predictions)
     print("Scores on test set: %s" % classification_report(actuals, predictions))

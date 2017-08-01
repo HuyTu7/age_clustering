@@ -132,10 +132,14 @@ if __name__ == '__main__':
         temp = json.load(f1, encoding="UTF-8")
     with open('groups_by_school_18k_age.json') as f2:
         schools = json.load(f2, encoding="UTF-8")
+    length = 0
+    for s in schools.values():
+        length += len(s)
+    print length
     school_ids = []
+
     for k, v in schools.items():
-        if len(v) > 10:
-            school_ids.append(k)
+        school_ids.append(k)
     ids = []
     index = 0
     id_schools = dict()
@@ -144,14 +148,20 @@ if __name__ == '__main__':
         for p in schools[s]:
             id_schools[p] = index
         index += 1
+    print len(ids)
     dataset = dict()
+    #filters out ids that does not have school info
     for id in ids:
         if str(id) in temp:
             dataset[str(id)] = temp[str(id)]
+
+    #sorting again to make sure that friends ids of one user
+    #is in the keys of the dictionary
     dataset = sorting1(dataset)
+    print len(dataset.keys())
     final_dataset = set_to_list(dataset)
-    #save_list(ids, 'school_ids.csv')
-    friends_f = open('temp_final.json', 'w')
+    print len(final_dataset.keys())
+    friends_f = open('ids_and_friends.json', 'w')
     try:
         json.dump(final_dataset, friends_f)
     finally:
@@ -163,8 +173,3 @@ if __name__ == '__main__':
     finally:
         schools_f.close()
 
-
-        #with open('result.json') as data_file:
-    #    graph_data = json.load(data_file)
-    #partitions = dfs(graph_data)
-    #save_graph(partitions, 'cluster_test.json')
