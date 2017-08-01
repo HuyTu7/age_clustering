@@ -134,10 +134,9 @@ if __name__ == '__main__':
     split = 0.4
     pd_df = pd.read_csv('./data_18k_age_class.csv', encoding="UTF-8", dtype={'id': str})
     df = dict([(row['id'], row['age_class']) for index, row in pd_df.iterrows()])
-    with open('school_ids.json') as file1:
+    with open('school_ids_test.json') as file1:
         s_ids = json.load(file1, encoding="UTF-8")
-    #print s_ids
-    with open('temp_final.json') as file2:
+    with open('temp_final_test.json') as file2:
         graph_data = dict_to_LofT(json.load(file2, encoding="UTF-8"))
     keys, g = dict_to_nx(graph_data)
     #print keys
