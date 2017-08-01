@@ -8,6 +8,8 @@ import time
 
 from sklearn.metrics import classification_report
 
+data_path = './input/'
+
 def dict_to_LofT(graph):
     graph_t = []
     keys = {}
@@ -17,14 +19,6 @@ def dict_to_LofT(graph):
         keys[count] = k
         count += 1
     return graph_t
-
-
-def dict_to_list(dict):
-    keys = dict.values()
-    with open('returns.csv', 'wb') as f:
-        writer = csv.writer(f)
-        for key in keys:
-            writer.writerow([key])
 
 
 def dict_to_nx(graph):
@@ -39,13 +33,6 @@ def dict_to_nx(graph):
                 #print "vertex: %s and vertex: %s" % (a, b)
                 g.add_edge(a, b)
     return keys, g
-
-
-def list_to_csv(dict):
-    with open('test_ids.csv', 'wb') as f:
-        writer = csv.writer(f)
-        for key in dict:
-            writer.writerow([key])
 
 
 def dist_cal(neighbors_list, num, dist, distances_list):
@@ -131,11 +118,11 @@ def save_list(data, name):
 if __name__ == '__main__':
     random.seed(98)
     split = 0.4
-    pd_df = pd.read_csv('./data_18k_age_class.csv', encoding="UTF-8", dtype={'id': str})
+    pd_df = pd.read_csv(data_path + 'data_18k_age_class.csv', encoding="UTF-8", dtype={'id': str})
     df = dict([(row['id'], row['age_class']) for index, row in pd_df.iterrows()])
-    with open('school_ids.json') as file1:
+    with open(data_path + 'school_ids.json') as file1:
         s_ids = json.load(file1, encoding="UTF-8")
-    with open('ids_and_friends.json') as file2:
+    with open(data_path + 'ids_and_friends.json') as file2:
         graph_data = dict_to_LofT(json.load(file2, encoding="UTF-8"))
     keys, g = dict_to_nx(graph_data)
 
